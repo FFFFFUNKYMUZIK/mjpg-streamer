@@ -21,7 +21,7 @@ CFLAGS += $(SVNDEV)
 # general compile flags, enable all warnings to make compile more verbose
 CFLAGS += -O2 -DLINUX -D_GNU_SOURCE -Wall 
 # CFLAGS += -g 
-#CFLAGS +=  -DDEBUG
+CFLAGS +=  -DDEBUG
 
 # we are using the libraries "libpthread" and "libdl"
 # libpthread is used to run several tasks (virtually) in parallel
@@ -38,7 +38,7 @@ PLUGINS += output_udp.so
 PLUGINS += output_http.so
 PLUGINS += input_testpicture.so
 #PLUGINS += output_autofocus.so
-#PLUGINS += input_gspcav1.so
+PLUGINS += input_gspcav1.so
 PLUGINS += input_file.so
 # PLUGINS += output_rtsp.so
 # PLUGINS += output_ptp2.so # commented out because it depends on libgphoto
