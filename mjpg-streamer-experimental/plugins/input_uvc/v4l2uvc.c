@@ -30,7 +30,6 @@
 #include "dynctrl.h"
 
 static int debug = 0;
-
 /* ioctl with a number of retries in the case of failure
 * args:
 * fd - device descriptor
@@ -40,17 +39,31 @@ static int debug = 0;
 */
 int xioctl(int fd, int IOCTL_X, void *arg)
 {
+    int i=0;
     int ret = 0;
     int tries = IOCTL_RETRY;
     do {
+DBG("xioctl loop\n");
+#ifdef USE_LIBV4L2
+i=42;
+#else
+i=10;
+#endif
+DBG("ioctl lib ver : %d\n", i);
         ret = IOCTL_VIDEO(fd, IOCTL_X, arg);
+DBG("IOCTL_VIDEO func returns\n");
     } while(ret && tries-- &&
             ((errno == EINTR) || (errno == EAGAIN) || (errno == ETIMEDOUT)));
 
+DBG("xioctl loop out\n");
+
     if(ret && (tries <= 0)) fprintf(stderr, "ioctl (%i) retried %i times - giving up: %s)\n", IOCTL_X, IOCTL_RETRY, strerror(errno));
 
+DBG("xioctl return\n");
     return (ret);
 }
+
+
 
 static int init_v4l2(struct vdIn *vd);
 
@@ -498,15 +511,22 @@ int uvcGrab(struct vdIn *vd)
 #define HEADERFRAME1 0xaf
     int ret;
 
+DBG("uvc_grab_1\n");
     if(vd->streamingState == STREAMING_OFF) {
-        if(video_enable(vd))
+        if(video_enable(vd)){
+DBG("video enable error\n");
             goto err;
+        }
     }
     memset(&vd->buf, 0, sizeof(struct v4l2_buffer));
     vd->buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     vd->buf.memory = V4L2_MEMORY_MMAP;
 
-    ret = xioctl(vd->fd, VIDIOC_DQBUF, &vd->buf);
+
+DBG("uvc_grab_2\n");
+    ret = xioctl(vd->fd, VIDIOC_DQBUF, &vd->buf);  //process pauses here!!
+DBG("uvc_grab_3\nreturned from xioctl func\n");
+
     if(ret < 0) {
         perror("Unable to dequeue buffer");
         goto err;
@@ -528,6 +548,8 @@ int uvcGrab(struct vdIn *vd)
         memcpy (vd->tmpbuffer + HEADERFRAME1 + sizeof(dht_data), vd->mem[vd->buf.index] + HEADERFRAME1, (vd->buf.bytesused - HEADERFRAME1));
         */
 
+DBG("uvc_grab_3\n");
+
         memcpy(vd->tmpbuffer, vd->mem[vd->buf.index], vd->buf.bytesused);
 
         if(debug)
@@ -546,18 +568,26 @@ int uvcGrab(struct vdIn *vd)
         break;
     }
 
+DBG("uvc_grab_4\n");
+
     ret = xioctl(vd->fd, VIDIOC_QBUF, &vd->buf);
     if(ret < 0) {
         perror("Unable to requeue buffer");
         goto err;
     }
+DBG("uvc_grab_5\n");
 
     return 0;
 
 err:
     vd->signalquit = 0;
+DBG("uvc_grab_6\n");
     return -1;
 }
+
+
+
+
 
 int close_v4l2(struct vdIn *vd)
 {

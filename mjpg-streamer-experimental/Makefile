@@ -21,7 +21,7 @@ CFLAGS += $(SVNDEV)
 # general compile flags, enable all warnings to make compile more verbose
 CFLAGS += -DLINUX -D_GNU_SOURCE -Wall 
 CFLAGS += -g -Wuninitialized
-#CFLAGS +=  -DDEBUG
+CFLAGS +=  -DDEBUG
 
 # we are using the libraries "libpthread" and "libdl"
 # libpthread is used to run several tasks (virtually) in parallel

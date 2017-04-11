@@ -455,22 +455,41 @@ void *cam_thread(void *arg)
 
     context *pcontext = arg;
     pglobal = pcontext->pglobal;
+    int i=0;
 
     /* set cleanup handler to cleanup allocated ressources */
     pthread_cleanup_push(cam_cleanup, pcontext);
 
     while(!pglobal->stop) {
+
+        DBG("0\n");
+
         while(pcontext->videoIn->streamingState == STREAMING_PAUSED) {
+            if (i<10)
+            {
+            DBG("Does this process stop here?\n");
+            i++;
+            }
+            else
+            {
+                break;
+            }
             usleep(1); // maybe not the best way so FIXME
         }
+       
+
+        DBG("1\n");
 
         /* grab a frame */
         if(uvcGrab(pcontext->videoIn) < 0) {
+            DBG("1.5\n");
             IPRINT("Error grabbing frames\n");
+        
             exit(EXIT_FAILURE);
         }
+        DBG("2\n");
 
-        //DBG("received frame of size: %d from plugin: %d\n", pcontext->videoIn->buf.bytesused, pcontext->id);
+        DBG("received frame of size: %d from plugin: %d\n", pcontext->videoIn->buf.bytesused, pcontext->id);
 
         /*
          * Workaround for broken, corrupted frames:
@@ -493,7 +512,7 @@ void *cam_thread(void *arg)
 
             // if the requested time did not esplashed skip the frame
             if ((current - last) < pcontext->videoIn->frame_period_time) {
-                //DBG("Last frame taken %d ms ago so drop it\n", (current - last));
+                DBG("Last frame taken %d ms ago so drop it\n", (current - last));
                 continue;
             }
             DBG("Lagg: %ld\n", (current - last) - pcontext->videoIn->frame_period_time);

@@ -42,6 +42,9 @@
 #include "../../mjpg_streamer.h"
 #define NB_BUFFER 4
 
+#ifndef USE_LIBV4L2
+#define USE_LIBV4L2
+#endif
 
 #define IOCTL_RETRY 4
 
