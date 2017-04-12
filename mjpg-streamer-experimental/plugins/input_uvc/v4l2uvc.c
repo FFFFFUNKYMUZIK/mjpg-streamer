@@ -29,7 +29,12 @@
 #include "huffman.h"
 #include "dynctrl.h"
 
+
+
 static int debug = 0;
+int gbytesused = 0;
+
+
 /* ioctl with a number of retries in the case of failure
 * args:
 * fd - device descriptor
@@ -44,11 +49,7 @@ int xioctl(int fd, int IOCTL_X, void *arg)
     int tries = IOCTL_RETRY;
     do {
 DBG("xioctl loop\n");
-#ifdef USE_LIBV4L2
-i=42;
-#else
-i=10;
-#endif
+
 DBG("ioctl lib ver : %d\n", i);
         ret = IOCTL_VIDEO(fd, IOCTL_X, arg);
 DBG("IOCTL_VIDEO func returns\n");
@@ -524,7 +525,7 @@ DBG("video enable error\n");
 
 
 DBG("uvc_grab_2\n");
-    ret = xioctl(vd->fd, VIDIOC_DQBUF, &vd->buf);  //process pauses here!!
+    ret = xioctl(vd->fd, VIDIOC_DQBUF, &vd->buf);  
 DBG("uvc_grab_3\nreturned from xioctl func\n");
 
     if(ret < 0) {
@@ -551,6 +552,8 @@ DBG("uvc_grab_3\nreturned from xioctl func\n");
 DBG("uvc_grab_3\n");
 
         memcpy(vd->tmpbuffer, vd->mem[vd->buf.index], vd->buf.bytesused);
+        
+        gbytesused=vd->buf.bytesused; //buf size is saved in global variable
 
         if(debug)
             fprintf(stderr, "bytes in used %d \n", vd->buf.bytesused);
@@ -575,7 +578,7 @@ DBG("uvc_grab_4\n");
         perror("Unable to requeue buffer");
         goto err;
     }
-DBG("uvc_grab_5\n");
+DBG("enque buffer\n");  //enque causes that vd->buf.bytesused changed into 0.
 
     return 0;
 

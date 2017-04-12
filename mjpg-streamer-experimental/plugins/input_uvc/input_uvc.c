@@ -55,6 +55,12 @@
 
 #define INPUT_PLUGIN_NAME "UVC webcam grabber"
 
+
+
+
+extern int gbytesused;
+
+
 /*
  * UVC resolutions mentioned at: (at least for some webcams)
  * http://www.quickcamteam.net/hcl/frame-format-matrix/
@@ -533,8 +539,16 @@ void *cam_thread(void *arg)
             pglobal->in[pcontext->id].size = compress_image_to_jpeg(pcontext->videoIn, pglobal->in[pcontext->id].buf, pcontext->videoIn->framesizeIn, gquality);
         } else {
         #endif
+
+
             DBG("copying frame from input: %d\n", (int)pcontext->id);
-            pglobal->in[pcontext->id].size = memcpy_picture(pglobal->in[pcontext->id].buf, pcontext->videoIn->tmpbuffer, pcontext->videoIn->buf.bytesused);
+        
+            
+            //    pglobal->in[pcontext->id].size = memcpy_picture(pglobal->in[pcontext->id].buf, pcontext->videoIn->tmpbuffer, pcontext->videoIn->buf.bytesused);
+
+            pglobal->in[pcontext->id].size = memcpy_picture(pglobal->in[pcontext->id].buf, pcontext->videoIn->tmpbuffer, gbytesused);   //use global buffer size 'cause the size in the structure is reset when the buffer is enque into device driver through ioctl
+
+
         #ifndef NO_LIBJPEG
         }
         #endif
